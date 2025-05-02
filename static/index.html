@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Management System - Login</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f4f4f4;
+            margin: 0;
+        }
+        .login-container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #message {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        .success {
+            color: green;
+        }
+        .error {
+            color: red;
+        }
+        .container {
+            position: absolute;
+            top: 0;
+            width: 100%;
+            text-align: center;
+            padding: 10px;
+            color: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="home-content">
+        <h2>Welcome to the Document Management System</h2>
+        <div id="message"></div>
+    </div>
+    <div class="login-container">
+        <h2>Authorization</h2>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit">Login to Dashboard</button>
+        </form>
+        <div id="message"></div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const messageDiv = document.getElementById('message');
+
+            const formData = new URLSearchParams();
+            formData.append('grant_type', 'password');
+            formData.append('username', username);
+            formData.append('password', password);
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/token', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'accept': 'application/json'
+                    },
+                    body: formData.toString()
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    messageDiv.className = 'success';
+                    messageDiv.textContent = `Token Received: ${data.access_token.substring(0, 20)}...`;
+                    // In a real application, you would store this token securely (e.g., localStorage, sessionStorage, or a more secure method)
+                    localStorage.setItem('accessToken', data.access_token);
+                    // Optionally redirect to a dashboard page here
+                    window.location.href = 'dashboard.html';
+                } else {
+                    messageDiv.className = 'error';
+                    messageDiv.textContent = `Authentication Failed: ${data.detail || response.statusText}`;
+                }
+
+            } catch (error) {
+                messageDiv.className = 'error';
+                messageDiv.textContent = `Error: ${error.message}`;
+            }
+        });
+    </script>
+</body>
+</html>

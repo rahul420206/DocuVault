@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Management System - Dashboard</title>
+    <link rel="stylesheet" href="/static/dashboard.css">
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="#" id="logout-link">Logout</a></li>
+        </ul>
+    </nav>
+    <div class="user-greeting" id="user-greeting">Hi, Guest</div>
+    <div class="tiles">
+        <div class="tile" id="home-link">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+        </div>
+        <div class="tile" id="upload-link">
+            <i class="fas fa-upload"></i>
+            <span>Upload</span>
+        </div>
+        <div class="tile" id="documents-link">
+            <i class="fas fa-file-alt"></i>
+            <span>Documents</span>
+        </div>
+        <div class="tile" id="search-link">
+            <i class="fas fa-search"></i>
+            <span>Search</span>
+        </div>
+    </div>
+
+    <div class="container" id="home-content">
+        <h2>Welcome to the Document Management System</h2>
+        <div id="message"></div>
+    </div>
+
+    <div class="container" id="upload-content" style="display: none;">
+        <h2>Upload Document</h2>
+        <form id="uploadForm" class="upload-form">
+            <div class="form-group">
+                <label for="description">Description:</label>
+                <input type="text" id="description" name="description">
+            </div>
+            <div class="form-group">
+                <label for="file">File:</label>
+                <input type="file" id="file" name="file" accept=".pdf" required>
+            </div>
+            <button type="submit">Upload</button>
+        </form>
+        <div id="upload-message"></div>
+    </div>
+
+    <div class="container" id="documents-content" style="display: none;">
+        <h2>Documents</h2>
+        <div id="documents-list">
+            <h3>Your Documents:</h3>
+            <ul></ul>
+        </div>
+    </div>
+
+    <div class="container" id="search-content" style="display: none;">
+        <h2>Search Documents</h2>
+        <form id="search-form">
+            <input type="text" id="search-query" placeholder="Search documents..." required>
+            <button type="submit" id="search-button" disabled>Search</button>
+        </form>
+        <div id="search-results">
+            <h3>Search Results:</h3>
+            <ul></ul>
+        </div>
+    </div>
+
+    <div id="versions-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="close-modal">×</span>
+            <h3>Document Versions</h3>
+            <ul id="versions-list"></ul>
+        </div>
+    </div>
+
+    <script src="/static/dashboard.js"></script>
+</body>
+</html>
