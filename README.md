@@ -61,5 +61,3 @@ The DocuVault project follows a **client-server architecture**:
 - **Document Versioning**: Supports multiple versions per document
 
 ---
-
-> ✅ Tip: Add screenshots or a usage demo to make this README even more engaging!
