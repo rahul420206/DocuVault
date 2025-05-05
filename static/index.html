@@ -73,6 +73,17 @@
             color: white;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
+        .register-link {
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        .register-link a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .register-link a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -93,6 +104,9 @@
             </div>
             <button type="submit">Login to Dashboard</button>
         </form>
+        <div class="register-link">
+            <p>Not yet Registered? <a href="/static/register.html">Click here</a></p>
+        </div>
         <div id="message"></div>
     </div>
 
@@ -124,9 +138,7 @@
                 if (response.ok) {
                     messageDiv.className = 'success';
                     messageDiv.textContent = `Token Received: ${data.access_token.substring(0, 20)}...`;
-                    // In a real application, you would store this token securely (e.g., localStorage, sessionStorage, or a more secure method)
                     localStorage.setItem('accessToken', data.access_token);
-                    // Optionally redirect to a dashboard page here
                     window.location.href = 'dashboard.html';
                 } else {
                     messageDiv.className = 'error';

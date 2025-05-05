@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 250px;
+            background-color: #2d3748; /* Darker blue-gray */
+            color: white;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+        .sidebar h2 {
+            margin-bottom: 30px;
+            color: #4299e1; /* Blue */
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 12px 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            color: #e2e8f0; /* Light blue-gray */
+            text-decoration: none;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .sidebar-link:hover {
+            background-color: #4a5568; /* Slightly lighter dark blue-gray */
+            color: white;
+        }
+        .sidebar-link svg {
+            margin-right: 10px;
+            width: 20px;
+            height: 20px;
+        }
+        .main-content {
+            flex-grow: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #2d3748;
+        }
+        .document-item {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+         .document-item strong {
+             color: #2d3748; /* Darker text for username */
+         }
+        .document-item a {
+            color: #4299e1;
+            text-decoration: none;
+            margin-right: 10px;
+            font-weight: 600;
+        }
+        .document-item a:hover {
+            text-decoration: underline;
+        }
+        .document-item button {
+            padding: 6px 12px;
+            background-color: #4299e1;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .document-item button:hover {
+            background-color: #3182ce;
+        }
+        .content-section {
+            margin-top: 20px;
+        }
+        .hidden {
+            display: none;
+        }
+        .message {
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        .success {
+            background-color: #c6f6d5; /* Green-100 */
+            color: #2f855a; /* Green-700 */
+            border: 1px solid #9ae6b4; /* Green-300 */
+        }
+        .error {
+            background-color: #fed7d7; /* Red-100 */
+            color: #c53030; /* Red-700 */
+            border: 1px solid #feb2b2; /* Red-300 */
+        }
+        /* Modal styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+            justify-content: center; /* Center horizontally */
+            align-items: center; /* Center vertically */
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%; /* Could be responsive */
+            max-width: 600px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            position: relative; /* Needed for close button positioning */
+        }
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            position: absolute;
+            top: 10px;
+            right: 15px;
+        }
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+         .modal-content ul {
+             list-style: none;
+             padding: 0;
+             margin-top: 15px;
+         }
+         .modal-content li {
+             padding: 10px 0;
+             border-bottom: 1px solid #eee;
+             display: flex;
+             justify-content: space-between;
+             align-items: center;
+         }
+         .modal-content li:last-child {
+             border-bottom: none;
+         }
+         .modal-content a {
+             color: #4299e1;
+             text-decoration: none;
+             margin-left: 10px;
+         }
+         .modal-content a:hover {
+             text-decoration: underline;
+         }
+         /* Style for the download button in the modal */
+         .modal-content li button {
+             padding: 4px 8px; /* Smaller padding for modal buttons */
+             background-color: #48bb78; /* Green */
+             color: white;
+             border: none;
+             border-radius: 4px;
+             cursor: pointer;
+             transition: background-color 0.3s ease;
+         }
+         .modal-content li button:hover {
+             background-color: #38a169; /* Darker green */
+         }
+    </style>
+</head>
+<body class="flex">
+    <div class="sidebar">
+        <h2>DocuVault</h2>
+        <a href="#" id="home-link" class="sidebar-link">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m0 0l7 7m-3 7v-10a1 1 0 00-1-1h-3m-6 0a1 1 0 00-1 1v10h4v-10a1 1 0 00-1-1z" />
+            </svg>
+            Home
+        </a>
+        <a href="#" id="upload-link" class="sidebar-link hidden">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+            </svg>
+            Upload Document
+        </a>
+        <a href="#" id="documents-link" class="sidebar-link hidden">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2H7a2 2 0 00-2 2v2m7-7h.01M7 16h.01" />
+            </svg>
+            My Documents
+        </a>
+        <a href="#" id="view-applicants-link" class="sidebar-link hidden">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0l6.569-3.939A8 8 0 0012 18.039a8 8 0 00-7.568 4.06L2 21z" />
+            </svg>
+            Applicant Docs
+        </a>
+         <a href="#" id="view-users-link" class="sidebar-link hidden">
+             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.653-.103-1.27-.3-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.653.103-1.27.3-1.857m0 0A9.953 9.953 0 0112 5c4.418 0 8 3.582 8 8v2m-8-8v2m0 8a9.953 9.953 0 01-2.7-7.143M12 12h.01" />
+             </svg>
+             View Users
+         </a>
+        <a href="#" id="search-link" class="sidebar-link hidden">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            Search
+        </a>
+        <a href="#" id="logout-link" class="sidebar-link">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3v-1m9-4v-1a3 3 0 00-3-3H6a3 3 0 00-3 3v1" />
+            </svg>
+            Logout
+        </a>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <h1 id="user-greeting">Hi, Guest</h1>
+        </div>
+
+        <div id="message" class="message hidden"></div>
+        <div id="upload-message" class="message hidden"></div>
+
+
+        <div id="home-content" class="content-section p-6 bg-white rounded-lg shadow-md">
+            <h2 class="text-2xl font-semibold mb-4 text-center">Welcome to DocuVault</h2>
+            <p class="text-gray-700">Select an option from the sidebar to get started.</p>
+        </div>
+
+        <div id="upload-content" class="content-section hidden p-6 bg-white rounded-lg shadow-md">
+            <h2 class="text-2xl font-semibold mb-4 text-center">Upload New Document or Version</h2>
+            <form id="uploadForm" class="flex flex-col gap-4">
+                <div>
+                    <label for="description" class="block text-sm font-medium text-gray-700">Description:</label>
+                    <input type="text" id="description" name="description" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label for="file" class="block text-sm font-medium text-gray-700">Select PDF File:</label>
+                    <input type="file" id="file" name="file" accept=".pdf" required class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                </div>
+                <button type="submit" class="w-full px-4 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Upload</button>
+            </form>
+        </div>
+
+        <div id="documents-content" class="content-section hidden p-6 bg-white rounded-lg shadow-md">
+            <h2 class="text-2xl font-semibold mb-4 text-center">My Documents</h2>
+            <div id="documents-list">
+                <ul>
+                    </ul>
+            </div>
+        </div>
+
+        <div id="view-applicants-content" class="content-section hidden p-6 bg-white rounded-lg shadow-md">
+             <h2 class="text-2xl font-semibold mb-4 text-center">Applicant Documents</h2>
+             <div id="applicants-list">
+                 <ul>
+                     </ul>
+             </div>
+         </div>
+
+         <div id="view-users-content" class="content-section hidden p-6 bg-white rounded-lg shadow-md">
+             <h2 class="text-2xl font-semibold mb-4 text-center">All Users (Applicants)</h2>
+             <div id="users-list">
+                 <ul>
+                     </ul>
+             </div>
+         </div>
+
+
+        <div id="search-content" class="content-section hidden p-6 bg-white rounded-lg shadow-md">
+            <h2 class="text-2xl font-semibold mb-4 text-center">Search Documents</h2>
+            <form id="search-form" class="flex flex-col md:flex-row items-center justify-center gap-4 mb-6">
+                <div class="flex items-center w-full md:w-auto">
+                    <label for="search-query" class="sr-only">Search Query:</label>
+                    <input type="text" id="search-query" placeholder="Enter search query..." class="flex-grow px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div class="flex items-center">
+                    <input type="checkbox" id="search-content-checkbox" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                    <label for="search-content-checkbox" class="ml-2 text-gray-700">Search file content</label>
+                </div>
+                <button type="submit" id="search-button" class="px-6 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed">Search</button>
+            </form>
+
+            <h3 class="text-xl font-semibold mb-3">Search Results:</h3>
+            <div id="search-results">
+                <ul>
+                    </ul>
+            </div>
+        </div>
+
+        <div id="versions-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-button" id="close-modal">&times;</span>
+                <div id="versions-list">
+                    <ul></ul> </div>
+            </div>
+        </div>
+
+
+    </div>
+
+    <script src="static/dashboard.js"></script>
+</body>
+</html>

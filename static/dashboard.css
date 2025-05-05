@@ -206,19 +206,19 @@ button:disabled {
     cursor: not-allowed;
 }
 
-#documents-list, #search-results {
+#documents-list, #search-results, #applicants-list {
     margin-top: 2rem;
     text-align: left;
 }
 
-#documents-list ul, #search-results ul {
+#documents-list ul, #search-results ul, #applicants-list ul {
     list-style: none;
     padding: 0;
     display: grid;
     gap: 1rem;
 }
 
-#documents-list ul li, #search-results ul li {
+#documents-list ul li, #search-results ul li, #applicants-list ul li {
     background: #f8fafc;
     padding: 1rem;
     border-radius: 8px;
@@ -226,7 +226,7 @@ button:disabled {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-#documents-list ul li:hover, #search-results ul li:hover {
+#documents-list ul li:hover, #search-results ul li:hover, #applicants-list ul li:hover {
     transform: translateY(-4px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document Management System - Dashboard</title>
     <link rel="stylesheet" href="/static/dashboard.css">
-</head>
+    </head>
 <body>
     <nav>
         <ul>
@@ -18,13 +18,21 @@
             <i class="fas fa-home"></i>
             <span>Home</span>
         </div>
+        <div class="tile" id="documents-link">
+            <i class="fas fa-file-alt"></i>
+            <span>My Documents</span>
+        </div>
+         <div class="tile" id="view-applicants-link">
+            <i class="fas fa-users"></i>
+            <span>Applicant Docs</span>
+        </div>
+        <div class="tile" id="view-users-link">
+            <i class="fas fa-address-book"></i>
+            <span>View Applicants</span>
+        </div>
         <div class="tile" id="upload-link">
             <i class="fas fa-upload"></i>
             <span>Upload</span>
-        </div>
-        <div class="tile" id="documents-link">
-            <i class="fas fa-file-alt"></i>
-            <span>Documents</span>
         </div>
         <div class="tile" id="search-link">
             <i class="fas fa-search"></i>
@@ -34,6 +42,7 @@
 
     <div class="container" id="home-content">
         <h2>Welcome to the Document Management System</h2>
+        <p>Select an option from the tiles above.</p>
         <div id="message"></div>
     </div>
 
@@ -54,17 +63,41 @@
     </div>
 
     <div class="container" id="documents-content" style="display: none;">
-        <h2>Documents</h2>
+        <h2>My Documents</h2>
         <div id="documents-list">
-            <h3>Your Documents:</h3>
+            <h3>Your Uploaded Documents:</h3>
             <ul></ul>
         </div>
     </div>
 
+    <div class="container" id="view-applicants-content" style="display: none;">
+        <h2>Applicant Documents</h2>
+        <div id="applicants-list">
+            <h3>Documents Uploaded by Applicants:</h3>
+            <ul></ul>
+        </div>
+    </div>
+
+    <div class="container" id="view-users-content" style="display: none;">
+        <h2>All Applicants</h2>
+        <div id="users-list">
+            <h3>Registered Users:</h3>
+            <ul></ul>
+        </div>
+    </div>
+
+
     <div class="container" id="search-content" style="display: none;">
         <h2>Search Documents</h2>
         <form id="search-form">
-            <input type="text" id="search-query" placeholder="Search documents..." required>
+            <div class="form-group">
+                <label for="search-query">Search Query:</label>
+                <input type="text" id="search-query" placeholder="Search documents..." required>
+            </div>
+            <div class="form-group">
+                <input type="checkbox" id="search-content-checkbox" name="search_content">
+                <label for="search-content-checkbox">Search file content</label>
+            </div>
             <button type="submit" id="search-button" disabled>Search</button>
         </form>
         <div id="search-results">
@@ -75,7 +108,7 @@
 
     <div id="versions-modal" class="modal">
         <div class="modal-content">
-            <span class="close" id="close-modal">×</span>
+            <span class="close" id="close-modal"><i class="fas fa-times"></i></span>
             <h3>Document Versions</h3>
             <ul id="versions-list"></ul>
         </div>
