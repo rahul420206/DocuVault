@@ -62,5 +62,5 @@ The DocuVault project follows a **client-server architecture**:
 
 ---
 
-![Dashboard Screenshot](images/Screenshot (132).png)
+![Dashboard Screenshot](images/1.png)
 
