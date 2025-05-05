@@ -1,32 +1,29 @@
--- Users table: Stores user authentication details
+
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(50) NOT NULL UNIQUE,
+    username VARCHAR(255) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_username (username)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    role ENUM('user', 'recruiter') NOT NULL DEFAULT 'user'
+);
 
--- Documents table: Stores document metadata
+
 CREATE TABLE documents (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    filename VARCHAR(255) NOT NULL,
-    file_path VARCHAR(512) NOT NULL,
+    title VARCHAR(255) UNIQUE NOT NULL,
     description TEXT,
     owner_id INT NOT NULL,
-    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE,
-    INDEX idx_owner_id (owner_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    latest_file_path VARCHAR(255), -- Stores the path to the latest version file
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
+);
 
--- Document Versions table: Stores version history for documents
+
 CREATE TABLE document_versions (
     id INT AUTO_INCREMENT PRIMARY KEY,
     document_id INT NOT NULL,
     version INT NOT NULL,
-    file_path VARCHAR(512) NOT NULL,
+    file_path VARCHAR(255) NOT NULL,
     uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE,
-    INDEX idx_document_id (document_id),
-    UNIQUE KEY uk_document_version (document_id, version)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    UNIQUE KEY (document_id, version) -- Ensure unique version number per document
+);

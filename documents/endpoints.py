@@ -538,3 +538,94 @@ async def download_document_version(
         print(f"Error downloading version {version_number} for doc {document_id}, user {current_user.id}: {e}")
         traceback.print_exc()
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Server error during download.")
+
+@router.delete("/{document_id}", status_code=status.HTTP_200_OK)
+async def delete_document(
+    document_id: int,
+    current_user: UserInDB = Depends(require_role(["user"])), # Only allow 'user' role
+):
+    """
+    Deletes a document and all its versions.
+    Only accessible by the document owner with the 'user' role.
+    """
+    try:
+        with get_db() as (db, cursor):
+            # 1. Verify document exists and is owned by the current user
+            cursor.execute(
+                "SELECT id, owner_id FROM documents WHERE id = %s", (document_id,)
+            )
+            doc = cursor.fetchone()
+
+            if not doc:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Document with ID {document_id} not found.",
+                )
+
+            if doc["owner_id"] != current_user.id:
+                print(
+                    f"AuthZ Error: User {current_user.id} ({current_user.username}) attempted to delete doc {document_id} owned by {doc['owner_id']}"
+                )
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Not authorized to delete this document.",
+                )
+
+            # 2. Get file paths for all versions of this document
+            cursor.execute(
+                "SELECT file_path FROM document_versions WHERE document_id = %s",
+                (document_id,),
+            )
+            version_file_paths = cursor.fetchall()
+
+            # 3. Delete database entries (documents and document_versions)
+            # Due to ON DELETE CASCADE on the foreign key in document_versions,
+            # deleting from the documents table should also delete related versions.
+            cursor.execute("DELETE FROM documents WHERE id = %s", (document_id,))
+            # Check if any rows were affected (optional, but good practice)
+            if cursor.rowcount == 0:
+                 # This case should ideally be caught by the initial SELECT,
+                 # but as a safeguard.
+                 raise HTTPException(
+                     status_code=status.HTTP_404_NOT_FOUND,
+                     detail=f"Document with ID {document_id} not found for deletion (after initial check).",
+                 )
+
+
+            # 4. Delete the actual files from the file system
+            deleted_count = 0
+            for path_record in version_file_paths:
+                file_path = path_record["file_path"]
+                # Security check: Ensure the file path is within the UPLOAD_DIR
+                if not os.path.commonpath([os.path.abspath(UPLOAD_DIR), os.path.abspath(file_path)]) == os.path.abspath(UPLOAD_DIR):
+                     print(f"Security Alert: Attempted to delete file outside UPLOAD_DIR: {file_path}")
+                     # Log the security attempt but continue with DB deletion
+                     continue # Skip deleting this specific file, but don't fail the request
+
+                if os.path.exists(file_path) and os.path.isfile(file_path):
+                    try:
+                        os.remove(file_path)
+                        deleted_count += 1
+                        print(f"Deleted file: {file_path}")
+                    except OSError as e:
+                        print(f"Error deleting file {file_path}: {e}")
+                        # Log the error but continue if other files/DB deletion succeeded
+
+            # 5. Return success response
+            return {"message": f"Document with ID {document_id} and its {len(version_file_paths)} versions ({deleted_count} files deleted) successfully deleted."}
+
+    except mysql.connector.Error as e:
+        print(f"DB Error deleting document {document_id} for user {current_user.id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Database error during document deletion.",
+        )
+    except HTTPException as e:
+        raise e # Re-raise explicit HTTPExceptions (like 403, 404)
+    except Exception as e:
+        print(f"Error deleting document {document_id} for user {current_user.id}: {e}")
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Server error during document deletion.",
+        )

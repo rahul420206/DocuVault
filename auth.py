@@ -13,7 +13,7 @@ from database import get_db
 from users.models import UserInDB, UserInDBInternal, Token, TokenData, UserCreate
 
 # Configuration (can move to a separate config file if needed)
-SECRET_KEY = os.getenv("SECRET_KEY", "your-super-secret-key-that-needs-to-be-changed")
+SECRET_KEY = os.getenv("SECRET_KEY", "5b182e8d53509cc4a2b18b3a991ea9acc3a06a798db0686b20faa87e0598f103")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 1440)) # Use the correct value
 

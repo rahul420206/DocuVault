@@ -407,7 +407,7 @@ async function showDocuments() {
         } else {
             data.forEach(doc => {
                 // FIX: Check for id existence
-                if (!doc || typeof doc !== 'object' || !doc.title || doc.id === undefined) {
+                if (!doc || typeof doc !== 'object' || doc.id === undefined || !doc.title) { // Ensure title is also checked
                     console.warn('Invalid document object:', doc); // Debug log
                     return;
                 }
@@ -416,9 +416,14 @@ async function showDocuments() {
                 // This link currently points to version 1. Consider updating to link to the latest version
                 // or always use the "View Versions" button to access downloads.
                 listItem.innerHTML = `
-                    <a href="/documents/${doc.id}/versions/1/download" target="_blank">${doc.title}</a>
-                    - ${doc.description || 'No Description'}
-                    <button onclick="showVersions(${doc.id}, '${doc.title.replace(/'/g, "\\'")}')">View Versions</button>
+                    <span>
+                        <a href="/documents/${doc.id}/versions/1/download" target="_blank">${doc.title}</a>
+                        - ${doc.description || 'No Description'}
+                    </span>
+                    <span class="flex items-center gap-2">
+                        <button onclick="showVersions(${doc.id}, '${doc.title.replace(/'/g, "\\'")}')">View Versions</button>
+                        <button onclick="deleteDocument(${doc.id})" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md">Delete</button>
+                    </span>
                 `;
                 documentsList.appendChild(listItem);
             });
@@ -432,6 +437,49 @@ async function showDocuments() {
                  : `Error fetching documents: ${error.message}`;
         }
         if (documentsList) documentsList.innerHTML = '<li>Failed to load documents.</li>'; // Show error in the list area
+    }
+}
+
+async function deleteDocument(documentId) {
+    console.log(`Attempting to delete document ID: ${documentId}`);
+
+    // Optional: Add a confirmation dialog
+    const confirmDelete = confirm("Are you sure you want to delete this document and all its versions? This action cannot be undone.");
+    if (!confirmDelete) {
+        console.log("Document deletion cancelled by user.");
+        return; // Stop if user cancels
+    }
+
+    try {
+        // Use fetchWithAuth for authenticated DELETE request
+        const response = await fetchWithAuth(`http://127.0.0.1:8000/documents/${documentId}`, {
+            method: 'DELETE'
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Deletion failed: ${response.status} ${response.statusText} - ${errorText}`);
+        }
+
+        const data = await response.json();
+        console.log('Delete response:', data);
+
+        // Show success message
+        if (messageDiv) {
+            messageDiv.className = 'success';
+            messageDiv.textContent = data.message;
+        }
+
+        // Refresh the documents list after successful deletion
+        await showDocuments();
+
+    } catch (error) {
+        console.error('Error during document deletion:', error);
+        // Display error message to the user
+        if (messageDiv) {
+            messageDiv.className = 'error';
+            messageDiv.textContent = `Deletion failed: ${error.message}`;
+        }
     }
 }
 
