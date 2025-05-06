@@ -27,3 +27,8 @@ CREATE TABLE document_versions (
     FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE,
     UNIQUE KEY (document_id, version) -- Ensure unique version number per document
 );
+
+
+ALTER TABLE documents DROP INDEX title;
+
+ALTER TABLE documents ADD UNIQUE INDEX unique_title_per_owner (title, owner_id);
