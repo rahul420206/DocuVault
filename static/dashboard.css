@@ -257,7 +257,7 @@ button:disabled {
     transform: translateY(-2px);
 }
 
-#search-form {
+/* #search-form {
     margin-top: 1.5rem;
     display: flex;
     justify-content: center;
@@ -275,7 +275,7 @@ button:disabled {
 
 #search-form button {
     border-radius: 0 8px 8px 0;
-}
+} */
 
 .modal {
     display: none;
@@ -362,9 +362,9 @@ button:disabled {
         margin: 1rem;
     }
 
-    #search-form input[type="text"] {
+    /* #search-form input[type="text"] {
         width: 100%;
-    }
+    } */
 
     .modal-content {
         margin: 20% 1rem;

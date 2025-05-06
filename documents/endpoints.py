@@ -92,6 +92,7 @@ async def upload_document_or_version(
 
     original_filename = file.filename
     file_ext = os.path.splitext(original_filename)[1]
+    # Use the sanitized filename as the document title
     document_slug = sanitize_filename(original_filename)
     timestamp = int(time.time())
     temp_save_path = os.path.join(UPLOAD_DIR, f"temp_{timestamp}_{original_filename.replace(' ', '_')}")
@@ -112,8 +113,9 @@ async def upload_document_or_version(
     final_file_path = None # Initialize to None
     try:
         with get_db() as (db, cursor):
+            # FIX: Modify the query to check for a document with the same title AND owned by the current user
             cursor.execute(
-                "SELECT id, owner_id FROM documents WHERE title = %s", (document_slug,)
+                "SELECT id, owner_id FROM documents WHERE title = %s AND owner_id = %s", (document_slug, current_user.id)
             )
             doc_result = cursor.fetchone()
 
@@ -121,17 +123,9 @@ async def upload_document_or_version(
             version: int
 
             if doc_result:
+                # Document with this title and owned by this user exists. Create a new version.
                 document_id = doc_result["id"]
-                owner_id = doc_result["owner_id"]
-                # Ownership check for updating existing documents (still required even with role check on endpoint)
-                if owner_id != current_user.id:
-                    print(
-                        f"AuthZ Error: User {current_user.id} ({current_user.username}) attempted to modify doc {document_id} owned by {owner_id}"
-                    )
-                    raise HTTPException(
-                        status_code=status.HTTP_403_FORBIDDEN,
-                        detail="Not authorized to modify this document",
-                    )
+                # No need to check owner_id again here, as the query already filtered by it.
 
                 cursor.execute(
                     "SELECT MAX(version) AS max_version FROM document_versions WHERE document_id = %s",
@@ -140,12 +134,14 @@ async def upload_document_or_version(
                 version_result = cursor.fetchone()
                 version = (version_result["max_version"] or 0) + 1
 
+                # Update document description only if provided
                 if description is not None:
                     cursor.execute(
                         "UPDATE documents SET description = %s WHERE id = %s",
                         (description, document_id),
                     )
             else:
+                # No document with this title owned by this user exists. Create a new document.
                 version = 1
                 cursor.execute(
                     "INSERT INTO documents (title, description, owner_id, created_at) VALUES (%s, %s, %s, NOW())",
@@ -155,24 +151,29 @@ async def upload_document_or_version(
                 if not document_id:
                     raise Exception("Failed to get last insert ID for new document.")
 
+            # Construct the final file path using the document slug, version, timestamp, and extension
             final_filename = f"{document_slug}_v{version}_{timestamp}{file_ext}"
             final_file_path = os.path.join(UPLOAD_DIR, final_filename)
 
             try:
+                # Rename the temporary file to its final name and location
                 os.rename(temp_save_path, final_file_path)
             except OSError as e:
                 print(f"Error renaming file from {temp_save_path} to {final_file_path}: {e}")
+                # Attempt to clean up the temporary file if renaming fails
                 if os.path.exists(temp_save_path):
                     try:
                         os.remove(temp_save_path)
                         print(f"Cleaned up temporary file: {temp_save_path}")
                     except OSError as rm_err:
                         print(f"Error cleaning up temporary file {temp_save_path} after rename failure: {rm_err}")
+                # Re-raise the exception to indicate failure
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                     detail=f"Failed to finalize file storage: {e}",
                 )
 
+            # Insert the new version into the document_versions table
             cursor.execute(
                 "INSERT INTO document_versions (document_id, version, file_path, uploaded_at) VALUES (%s, %s, %s, NOW())",
                 (document_id, version, final_file_path),
@@ -181,11 +182,13 @@ async def upload_document_or_version(
             if not version_id:
                 raise Exception("Failed to get last insert ID for new version.")
 
+            # Update the latest_file_path in the documents table
             cursor.execute(
                 "UPDATE documents SET latest_file_path = %s WHERE id = %s",
                 (final_file_path, document_id),
             )
 
+        # Return a success response with details about the upload
         return {
             "message": f"File '{original_filename}' uploaded successfully as version {version} for document '{document_slug}'.",
             "document_id": document_id,
@@ -196,27 +199,33 @@ async def upload_document_or_version(
         }
 
     except (mysql.connector.Error, HTTPException) as e:
+        # Handle specific database or HTTP exceptions
+        # Attempt to clean up the temporary file in case of error
         if os.path.exists(temp_save_path):
             print(f"Cleaning up temporary file due to DB/HTTP error: {temp_save_path}")
             try:
                 os.remove(temp_save_path)
             except OSError as rm_err:
                 print(f"Error removing temporary file {temp_save_path}: {rm_err}")
-        raise e
+        raise e # Re-raise the exception
+
     except Exception as e:
+        # Handle any other unexpected errors
         print(f"Unexpected error during DB operations, file rename, or other: {e}")
         traceback.print_exc()
+        # Attempt to clean up the temporary file in case of unexpected error
         if os.path.exists(temp_save_path):
             print(f"Cleaning up temporary file due to unexpected error: {temp_save_path}")
             try:
                 os.remove(temp_save_path)
             except OSError as rm_err:
                 print(f"Error removing temporary file {temp_save_path}: {rm_err}")
+        # Raise a generic internal server error
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"An internal server error occurred: {e}",
         )
-
+    
 # Users can only get documents they own
 # Recruiters will use a different endpoint to see applicant documents
 @router.get("/", response_model=List[Document])
