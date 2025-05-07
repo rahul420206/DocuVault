@@ -4,6 +4,12 @@ This document outlines the prerequisites, setup instructions, and structure for 
 
 ---
 
+## Branch: individual-submission
+
+🔒 This branch is strictly for **individual task submission**.    
+✅ All commits here are part of personal work only.
+
+
 ## 🧩 Project Overview
 
 DocuVault is a web application that allows:
